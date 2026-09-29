@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Beach Street Exchange (BSX)</title>
+  <style>
+    :root {
+      --bg: #04080c;
+      --card-bg: #0b141d;
+      --card-border: #182736;
+      --text-main: #f0f6fc;
+      --text-muted: #8b9bb4;
+      --green: #00c805;
+      --green-soft: rgba(0, 200, 5, 0.12);
+      --red: #ff5000;
+      --red-soft: rgba(255, 80, 0, 0.12);
+      --accent: #1e88e5;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: var(--font);
+      padding-bottom: 90px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top Bar */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(4, 8, 12, 0.95);
+      backdrop-filter: blur(12px);
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .brand { font-size: 1.1rem; font-weight: 800; letter-spacing: -0.5px; }
+    .brand span { color: var(--green); }
+    .day-badge {
+      font-size: 0.75rem;
+      background: var(--card-border);
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    /* Player Switcher */
+    .player-select-container {
+      padding: 12px 16px;
+      background: #080f17;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .player-select-label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
+    select.player-select {
+      background: var(--card-bg);
+      color: var(--text-main);
+      border: 1px solid var(--card-border);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      outline: none;
+    }
+
+    /* Hero / Balance */
+    .hero { padding: 20px 16px 16px; }
+    .hero-label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .hero-balance { font-size: 2.2rem; font-weight: 800; margin: 4px 0 2px; }
+    .hero-sub { font-size: 0.85rem; color: var(--text-muted); }
+
+    /* Goal Progress Bar */
+    .goal-card {
+      margin: 0 16px 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .goal-labels { display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 600; margin-bottom: 6px; }
+    .progress-bar-bg { background: #132230; height: 8px; border-radius: 4px; overflow: hidden; }
+    .progress-bar-fill { background: var(--green); height: 100%; width: 0%; transition: width 0.4s ease; }
+
+    /* Global Action Controls */
+    .control-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 0 16px 16px;
+    }
+    button {
+      cursor: pointer;
+      font-family: inherit;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: transform 0.05s ease, opacity 0.2s;
+    }
+    button:active { transform: scale(0.98); }
+    .btn-action {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 10px;
+      font-size: 0.8rem;
+    }
+    .btn-advance { background: var(--accent); color: #fff; }
+    .btn-close-exchange { background: #e53935; color: #fff; grid-column: span 2; padding: 12px; margin-top: 4px; }
+
+    /* Section Containers */
+    .section-title {
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 16px 16px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Stocks Grid */
+    .stock-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      margin: 0 16px 12px;
+      padding: 14px;
+    }
+    .stock-head { display: flex; justify-content: space-between; align-items: flex-start; }
+    .stock-symbol { font-size: 1.1rem; font-weight: 800; display: flex; align-items: center; gap: 6px; }
+    .stock-name { font-size: 0.8rem; color: var(--text-muted); }
+    .stock-price { font-size: 1.1rem; font-weight: 800; text-align: right; }
+    .stock-change { font-size: 0.8rem; font-weight: 600; }
+    .badge-frozen {
+      font-size: 0.65rem;
+      background: #442a00;
+      color: #ffb100;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #7a4b00;
+    }
+
+    /* SVG Chart */
+    .chart-container { width: 100%; height: 50px; margin: 10px 0; }
+    svg { width: 100%; height: 100%; overflow: visible; }
+
+    .stock-trade-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .btn-trade {
+      flex: 1;
+      padding: 7px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: #152433;
+      color: var(--text-main);
+    }
+    .btn-trade.green { color: var(--green); }
+    .btn-trade.red { color: var(--red); }
+    .btn-trade:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    /* Tables / Position Lists */
+    .table-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      margin: 0 16px 16px;
+      overflow: hidden;
+    }
+    .table-item {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+    }
+    .table-item:last-child { border-bottom: none; }
+    .text-green { color: var(--green); }
+    .text-red { color: var(--red); }
+
+    /* Modals / Panels */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: flex-end;
+      z-index: 200;
+    }
+    .modal-card {
+      background: #0f1c29;
+      width: 100%;
+      border-radius: 20px 20px 0 0;
+      padding: 20px 18px 30px;
+      border-top: 1px solid var(--card-border);
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .btn-close { background: none; font-size: 1.4rem; color: var(--text-muted); }
+    .field-group { margin-bottom: 14px; }
+    .field-group label { display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; font-weight: 700; }
+    .field-group input, .field-group select {
+      width: 100%;
+      padding: 12px;
+      background: #070e16;
+      border: 1px solid var(--card-border);
+      color: #fff;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    .btn-primary { width: 100%; padding: 14px; background: var(--green); color: #000; font-size: 0.95rem; font-weight: 800; border-radius: 8px; margin-top: 8px; }
+    .btn-primary.sell { background: var(--red); color: #fff; }
+
+    /* Challenges & Incidents */
+    .badge-status { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+    .badge-pending { background: #3b2800; color: #ffb100; }
+    .badge-resolved { background: #0c3314; color: var(--green); }
+    .badge-failed { background: #3c120c; color: var(--red); }
+
+    .news-item {
+      padding: 10px 14px;
+      font-size: 0.8rem;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .news-item:last-child { border-bottom: none; }
+    .news-time { font-size: 0.7rem; color: var(--text-muted); }
+
+    /* Awards Screen */
+    .award-pill {
+      background: #112130;
+      border: 1px solid var(--card-border);
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    .award-title { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; }
+    .award-winner { font-size: 1rem; font-weight: 800; color: var(--green); }
+  </style>
+</head>
+<body>
+
+  <!-- Top Fixed Bar -->
+  <header>
+    <div class="brand">BSX<span>.</span></div>
+    <div class="day-badge" id="current-day-label">DAY 1 OF 4</div>
+  </header>
+
+  <!-- Player Switcher Bar -->
+  <div class="player-select-container">
+    <div class="player-select-label">Active Portfolio</div>
+    <select class="player-select" id="player-selector" onchange="BSX.switchPlayer(this.value)">
+      <option value="Nic">Nic (NIC)</option>
+      <option value="Eliot">Eliot (ELI)</option>
+      <option value="Skye">Skye (SKY)</option>
+      <option value="Cheyne">Cheyne (CHY)</option>
+    </select>
+  </div>
+
+  <!-- Portfolio Header -->
+  <div class="hero">
+    <div class="hero-label">Total Portfolio Equity</div>
+    <div class="hero-balance" id="player-equity">$1,000.00</div>
+    <div class="hero-sub" id="player-cash-sub">Cash: $1,000.00 • Short Debt: $0.00</div>
+  </div>
+
+  <!-- Goal Progress ($3,000 Goal) -->
+  <div class="goal-card">
+    <div class="goal-labels">
+      <span>$3,000 Wealth Milestone</span>
+      <span id="goal-progress-percent">33%</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="goal-progress-fill"></div>
+    </div>
+  </div>
+
+  <!-- Action Controls -->
+  <div class="control-actions">
+    <button class="btn-action" onclick="BSX.openIncidentModal()">🚨 Report Incident</button>
+    <button class="btn-action" onclick="BSX.triggerRandomEvent()">🎲 Trigger Random Event</button>
+    <button class="btn-action btn-advance" onclick="BSX.advanceDay()">☀️ Advance to Next Day (+$250)</button>
+    <button class="btn-action" onclick="BSX.confirmReset()">🔄 Reset Game</button>
+    <button class="btn-action btn-close-exchange" id="btn-close-exchange" style="display: none;" onclick="BSX.closeExchange()">🏆 Close Exchange & Award Winners</button>
+  </div>
+
+  <!-- Stock Listings -->
+  <div class="section-title">Beach Equities</div>
+  <div id="stocks-container"></div>
+
+  <!-- Current Player Positions -->
+  <div class="section-title">Your Open Positions</div>
+  <div class="table-card" id="positions-container">
+    <div class="table-item" style="color: var(--text-muted);">No open long or short positions.</div>
+  </div>
+
+  <!-- Vacation Challenges -->
+  <div class="section-title">
+    <span>Day <span id="challenges-day-num">1</span> Challenges</span>
+  </div>
+  <div class="table-card" id="challenges-container"></div>
+
+  <!-- Pending Reported Incidents -->
+  <div class="section-title">
+    <span>Incidents Queue</span>
+  </div>
+  <div class="table-card" id="incidents-container"></div>
+
+  <!-- Leaderboard -->
+  <div class="section-title">Exchange Wealth Standings</div>
+  <div class="table-card" id="leaderboard-container"></div>
+
+  <!-- News / Event Feed -->
+  <div class="section-title">Exchange Wire</div>
+  <div class="table-card" id="news-container"></div>
+
+  <!-- Trade Modal -->
+  <div class="modal-overlay" id="trade-modal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3 id="trade-modal-title">Trade Stock</h3>
+        <button class="btn-close" onclick="BSX.closeModal('trade-modal')">&times;</button>
+      </div>
+      <div id="trade-modal-summary" style="font-size:0.85rem; color:var(--text-muted); margin-bottom: 12px;"></div>
+      
+      <div class="field-group">
+        <label>Action</label>
+        <select id="trade-action" onchange="BSX.updateTradeModalCalculations()">
+          <option value="BUY">Buy Long</option>
+          <option value="SELL">Sell Long</option>
+          <option value="SHORT">Sell Short (Collateral Req.)</option>
+          <option value="COVER">Cover Short</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <label>Shares</label>
+        <input type="number" id="trade-shares" min="1" step="1" value="1" oninput="BSX.updateTradeModalCalculations()">
+      </div>
+
+      <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;" id="trade-calculation-details">
+        Estimated Value: $0.00
+      </div>
+
+      <button class="btn-primary" id="btn-execute-trade" onclick="BSX.executeTrade()">Confirm Order</button>
+    </div>
+  </div>
+
+  <!-- Incident Modal -->
+  <div class="modal-overlay" id="incident-modal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>Report Friend Incident</h3>
+        <button class="btn-close" onclick="BSX.closeModal('incident-modal')">&times;</button>
+      </div>
+      
+      <div class="field-group">
+        <label>Subject Player</label>
+        <select id="incident-target">
+          <option value="NIC">Nic (NIC)</option>
+          <option value="ELI">Eliot (ELI)</option>
+          <option value="SKY">Skye (SKY)</option>
+          <option value="CHY">Cheyne (CHY)</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <label>Direction</label>
+        <select id="incident-direction">
+          <option value="POSITIVE">Positive (+ Boost Price)</option>
+          <option value="NEGATIVE">Negative (- Crash Price)</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <label>Severity</label>
+        <select id="incident-severity">
+          <option value="0.05">5% (Minor infraction/win)</option>
+          <option value="0.10">10% (Solid contribution/party foul)</option>
+          <option value="0.20">20% (Substantial impact)</option>
+          <option value="0.30">30% (Critical trip drama/legendary clutch)</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <label>Description of Incident</label>
+        <input type="text" id="incident-desc" placeholder="e.g. Dropped guacamole on the rug" maxlength="70">
+      </div>
+
+      <button class="btn-primary" onclick="BSX.submitIncident()">Submit to Board</button>
+    </div>
+  </div>
+
+  <!-- End Game Modal -->
+  <div class="modal-overlay" id="endgame-modal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>Exchange Final Settlement</h3>
+        <button class="btn-close" onclick="BSX.closeModal('endgame-modal')">&times;</button>
+      </div>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">
+        All open long and short positions have been liquidated at closing prices.
+      </p>
+      
+      <div id="awards-content"></div>
+
+      <button class="btn-primary" style="margin-top: 14px;" onclick="BSX.closeModal('endgame-modal')">Review Final Dashboard</button>
+    </div>
+  </div>
+
+<script>
+/**
+ * BEACH STREET EXCHANGE (BSX)
+ * Prototype Core Engine
+ */
+
+const CHALLENGE_POOL = [
+  "Convince the group to eat somewhere of your choosing.",
+  "Make everyone laugh within an hour without showing a screen.",
+  "Win a spontaneous sandcastle or mini-competition.",
+  "Take the funniest photo of the day and send it to the group chat.",
+  "Successfully predict what another player will order.",
+  "Spot a seagull stealing food before anyone else does.",
+  "Convince a stranger to take a group photo without taking a selfie.",
+  "Be the first person in the ocean today.",
+  "Apply sunscreen without missing a spot on someone's cue.",
+  "Go 2 hours without checking your social media feeds.",
+  "Invent a signature cocktail or beach snack for everyone.",
+  "Win a game of beach paddle ball or volleyball point.",
+  "Quote a classic movie line naturally in a beach conversation.",
+  "Wake up first and secure the morning coffee or waters.",
+  "Carry the heavy cooler from the house to the sand solo.",
+  "Negotiate the best spot on the beach for the squad.",
+  "Find a pristine, intact seashell and present it to the group.",
+  "Correctly identify 3 songs played on the beach speaker in a row.",
+  "Keep everyone hydrated: pass out round of ice water.",
+  "Successfully take a 20-minute power nap without getting sunburned.",
+  "Convince someone to switch beach chairs with you.",
+  "Tell a fictional travel story that everyone believes for 5 minutes.",
+  "Pack up all trash in your immediate perimeter without complaining.",
+  "Body-surf or boogie-board a wave for at least 5 seconds.",
+  "Avoid spilling a single drop of drink on the sand all day.",
+  "Cook or prepare a shared snack plate for all 4 players.",
+  "Find a dog on the beach and learn its name from the owner.",
+  "Organize a spontaneous game of cards or beach trivia.",
+  "Guess the total dinner or bar tab within $5 before the bill arrives.",
+  "DJ an entire 45-minute playlist with zero track skips from the squad."
+];
+
+const RANDOM_EVENTS = [
+  { text: "Unexpected endorsement sends shares soaring.", delta: 0.045 },
+  { text: "Accused of hoarding the good beach snacks; shares stumble.", delta: -0.04 },
+  { text: "Investors celebrate an unexpected strategic breakthrough in dinner choices.", delta: 0.05 },
+  { text: "Questionable playlist choice leads to minor investor panic.", delta: -0.035 },
+  { text: "Clutch cooler replenishment praised by institutional analysts.", delta: 0.04 },
+  { text: "Caught napping through critical group strategy summit.", delta: -0.03 },
+  { text: "Delivered top-tier comedy hour; analysts issue strong buy.", delta: 0.05 },
+  { text: "Sunscreen miscalculation triggers mild reputational discount.", delta: -0.025 },
+  { text: "Unprompted ice run secures heroic market upgrade.", delta: 0.04 },
+  { text: "Lost sunglasses in ocean depths; minor operational setback.", delta: -0.03 },
+  { text: "Negotiated premium beach perimeter; equity climbs.", delta: 0.035 },
+  { text: "Failed to hear group chat alert; downgraded by peers.", delta: -0.02 },
+  { text: "Clutched the restaurant reservation when everywhere was booked.", delta: 0.05 },
+  { text: "Spilled dip onto beach blanket; regulatory fine assessed.", delta: -0.045 },
+  { text: "Demonstrated masterclass bodysurfing form to beach bystanders.", delta: 0.03 },
+  { text: "Complained about walking two blocks; investor enthusiasm dips.", delta: -0.03 },
+  { text: "Brought backup portable chargers for the entire crew.", delta: 0.045 },
+  { text: "Forgot beach towel back at the condo; penalized.", delta: -0.025 },
+  { text: "Prepared immaculate guacamole; trading volume spikes.", delta: 0.05 },
+  { text: "Early wake-up run to grab fresh breakfast bagels.", delta: 0.04 }
+];
+
+const INITIAL_STOCKS = {
+  NIC: { symbol: 'NIC', name: 'Nic Cadwallader', price: 100.00, history: [100.00], frozen: false },
+  ELI: { symbol: 'ELI', name: 'Eliot', price: 100.00, history: [100.00], frozen: false },
+  SKY: { symbol: 'SKY', name: 'Skye', price: 100.00, history: [100.00], frozen: false },
+  CHY: { symbol: 'CHY', name: 'Cheyne', price: 100.00, history: [100.00], frozen: false }
+};
+
+const DEFAULT_PLAYERS = {
+  Nic: { name: 'Nic', cash: 1000.00, holdings: {}, shorts: {}, history: [] },
+  Eliot: { name: 'Eliot', cash: 1000.00, holdings: {}, shorts: {}, history: [] },
+  Skye: { name: 'Skye', cash: 1000.00, holdings: {}, shorts: {}, history: [] },
+  Cheyne: { name: 'Cheyne', cash: 1000.00, holdings: {}, shorts: {}, history: [] }
+};
+
+class BeachStreetExchange {
+  constructor() {
+    this.storageKey = "BSX_PROTOTYPE_DATA_V1";
+    this.loadState();
+    this.selectedTradeSymbol = null;
+  }
+
+  loadState() {
+    const raw = localStorage.getItem(this.storageKey);
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        this.state = parsed;
+        return;
+      } catch (e) {
+        console.error("Error reading saved state, initializing fresh", e);
+      }
+    }
+    this.initializeDefaultState();
+  }
+
+  initializeDefaultState() {
+    this.state = {
+      day: 1,
+      activePlayer: 'Nic',
+      stocks: JSON.parse(JSON.stringify(INITIAL_STOCKS)),
+      players: JSON.parse(JSON.stringify(DEFAULT_PLAYERS)),
+      challenges: [],
+      incidents: [],
+      news: [{ text: "Beach Street Exchange opens for trading at $100.00 base.", time: "Day 1 Open" }],
+      completedTrades: [] // for end game awards
+    };
+    this.generateDailyChallenges();
+    this.saveState();
+  }
+
+  saveState() {
+    localStorage.setItem(this.storageKey, JSON.stringify(this.state));
+  }
+
+  confirmReset() {
+    if (confirm("Reset the entire prototype back to Day 1 and $1,000 cash?")) {
+      localStorage.removeItem(this.storageKey);
+      this.initializeDefaultState();
+      this.render();
+    }
+  }
+
+  // --- Calculations & Margin Rules ---
+
+  calculatePlayerEquity(playerKey) {
+    const player = this.state.players[playerKey];
+    let equity = player.cash;
+
+    // Add Long Holdings Value
+    for (const [sym, shares] of Object.entries(player.holdings)) {
+      if (shares > 0) {
+        equity += shares * this.state.stocks[sym].price;
+      }
+    }
+
+    // Short positions: Equity already holds cash from short sale.
+    // Deduct the current cost to repurchase/cover those shares.
+    for (const [sym, shortData] of Object.entries(player.shorts)) {
+      if (shortData.shares > 0) {
+        const liability = shortData.shares * this.state.stocks[sym].price;
+        equity -= liability;
+      }
+    }
+    return equity;
+  }
+
+  calculateShortLiability(playerKey) {
+    const player = this.state.players[playerKey];
+    let liability = 0;
+    for (const [sym, shortData] of Object.entries(player.shorts)) {
+      if (shortData.shares > 0) {
+        liability += shortData.shares * this.state.stocks[sym].price;
+      }
+    }
+    return liability;
+  }
+
+  /**
+   * Risk Check: Automatic Short Liquidation
+   * Triggered when a stock spikes and a player's short liability exceeds safe limits
+   */
+  checkMarginCalls() {
+    Object.keys(this.state.players).forEach(playerKey => {
+      const equity = this.calculatePlayerEquity(playerKey);
+      const player = this.state.players[playerKey];
+
+      for (const [sym, shortData] of Object.entries(player.shorts)) {
+        if (shortData.shares > 0) {
+          const currentPrice = this.state.stocks[sym].price;
+          const liability = shortData.shares * currentPrice;
+
+          // If the short exposure exceeds 75% of equity or cash cannot sustain covering, auto-liquidate
+          if (liability > equity * 0.75 || player.cash < liability) {
+            this.coverShortPosition(playerKey, sym, shortData.shares, true);
+          }
+        }
+      }
+    });
+  }
+
+  // --- Day Progression ---
+
+  advanceDay() {
+    if (this.state.day >= 4) {
+      alert("You are on Day 4 (Final Day). You can trade or proceed to Close the Exchange!");
+      return;
+    }
+
+    this.state.day += 1;
+    // Award daily stipend of $250 to each player
+    Object.values(this.state.players).forEach(player => {
+      player.cash += 250;
+      player.history.unshift(`Day ${this.state.day} stipend: +$250.00 cash`);
+    });
+
+    this.state.news.unshift({
+      text: `Market Day ${this.state.day} has commenced. All players credited with +$250 cash.`,
+      time: `Day ${this.state.day} Open`
+    });
+
+    this.generateDailyChallenges();
+    this.saveState();
+    this.render();
+  }
+
+  generateDailyChallenges() {
+    const symbols = Object.keys(this.state.stocks);
+    const shuffled = [...CHALLENGE_POOL].sort(() => 0.5 - Math.random());
+    this.state.challenges = symbols.map((sym, index) => ({
+      id: `C-${this.state.day}-${sym}`,
+      day: this.state.day,
+      symbol: sym,
+      playerName: this.state.stocks[sym].name,
+      description: shuffled[index],
+      status: 'PENDING' // PENDING, SUCCESS, FAILED
+    }));
+  }
+
+  resolveChallenge(challengeId, isSuccess) {
+    const chal = this.state.challenges.find(c => c.id === challengeId);
+    if (!chal || chal.status !== 'PENDING') return;
+
+    chal.status = isSuccess ? 'SUCCESS' : 'FAILED';
+    const percentChange = isSuccess ? 0.20 : -0.15;
+    this.applyStockPriceChange(chal.symbol, percentChange, `Challenge ${isSuccess ? 'Passed' : 'Failed'}: "${chal.description}"`);
+  }
+
+  // --- Incident Flow ---
+
+  openIncidentModal() {
+    document.getElementById('incident-modal').style.display = 'flex';
+  }
+
+  submitIncident() {
+    const symbol = document.getElementById('incident-target').value;
+    const dir = document.getElementById('incident-direction').value;
+    const severity = parseFloat(document.getElementById('incident-severity').value);
+    const desc = document.getElementById('incident-desc').value.trim();
+
+    if (!desc) {
+      alert("Please provide a short description of what happened.");
+      return;
+    }
+
+    const netDelta = dir === 'POSITIVE' ? severity : -severity;
+
+    // Freeze trading for the stock while incident is pending
+    this.state.stocks[symbol].frozen = true;
+
+    this.state.incidents.unshift({
+      id: 'INC-' + Date.now(),
+      reporter: this.state.activePlayer,
+      symbol: symbol,
+      delta: netDelta,
+      description: desc,
+      status: 'PENDING',
+      time: `Day ${this.state.day}`
+    });
+
+    this.state.news.unshift({
+      text: `TRADING HALT: ${symbol} is frozen pending verification of reported incident: "${desc}"`,
+      time: `Day ${this.state.day}`
+    });
+
+    document.getElementById('incident-desc').value = '';
+    this.closeModal('incident-modal');
+    this.saveState();
+    this.render();
+  }
+
+  resolveIncident(incidentId, approved) {
+    const inc = this.state.incidents.find(i => i.id === incidentId);
+    if (!inc || inc.status !== 'PENDING') return;
+
+    inc.status = approved ? 'APPROVED' : 'REJECTED';
+    this.state.stocks[inc.symbol].frozen = false; // Lift freeze
+
+    if (approved) {
+      this.applyStockPriceChange(inc.symbol, inc.delta, `Incident Confirmed: ${inc.description}`);
+    } else {
+      this.state.news.unshift({
+        text: `TRADING RESUMED: Reported incident on ${inc.symbol} was rejected by exchange authorities.`,
+        time: `Day ${this.state.day}`
+      });
+      this.saveState();
+      this.render();
+    }
+  }
+
+  // --- Market Catalyst / News ---
+
+  triggerRandomEvent() {
+    const symbols = Object.keys(this.state.stocks);
+    const chosenSym = symbols[Math.floor(Math.random() * symbols.length)];
+    const chosenEvent = RANDOM_EVENTS[Math.floor(Math.random() * RANDOM_EVENTS.length)];
+
+    // Delta between -5% and +5%
+    const delta = chosenEvent.delta;
+    this.applyStockPriceChange(chosenSym, delta, `Breaking Wire: ${chosenEvent.text}`);
+  }
+
+  applyStockPriceChange(symbol, percentDelta, reasonNote) {
+    const stock = this.state.stocks[symbol];
+    const prevPrice = stock.price;
+    let newPrice = Math.round((prevPrice * (1 + percentDelta)) * 100) / 100;
+    if (newPrice < 5.00) newPrice = 5.00; // Price floor
+
+    stock.price = newPrice;
+    stock.history.push(newPrice);
+
+    const sign = percentDelta >= 0 ? '+' : '';
+    const pctLabel = `${sign}${(percentDelta * 100).toFixed(1)}%`;
+
+    this.state.news.unshift({
+      text: `${symbol} shifted ${pctLabel} to $${newPrice.toFixed(2)}. (${reasonNote})`,
+      time: `Day ${this.state.day}`
+    });
+
+    // Run risk liquidation check after price shift
+    this.checkMarginCalls();
+    this.saveState();
+    this.render();
+  }
+
+  // --- Trading Logic ---
+
+  openTradeModal(symbol, presetAction = 'BUY') {
+    const stock = this.state.stocks[symbol];
+    if (stock.frozen) {
+      alert(`${symbol} shares are currently FROZEN due to a pending incident report!`);
+      return;
+    }
+
+    this.selectedTradeSymbol = symbol;
+    document.getElementById('trade-modal-title').textContent = `Trade ${stock.name} (${symbol})`;
+    document.getElementById('trade-action').value = presetAction;
+    document.getElementById('trade-shares').value = 1;
+
+    this.updateTradeModalCalculations();
+    document.getElementById('trade-modal').style.display = 'flex';
+  }
+
+  updateTradeModalCalculations() {
+    if (!this.selectedTradeSymbol) return;
+    const stock = this.state.stocks[this.selectedTradeSymbol];
+    const player = this.state.players[this.state.activePlayer];
+    const action = document.getElementById('trade-action').value;
+    const shares = parseInt(document.getElementById('trade-shares').value) || 0;
+    const totalVal = Math.round(shares * stock.price * 100) / 100;
+
+    const longShares = player.holdings[this.selectedTradeSymbol] || 0;
+    const shortData = player.shorts[this.selectedTradeSymbol] || { shares: 0, costBasis: 0 };
+
+    document.getElementById('trade-modal-summary').innerHTML = `
+      Price: <strong>$${stock.price.toFixed(2)}</strong> | Available Cash: <strong>$${player.cash.toFixed(2)}</strong><br>
+      You own: <strong>${longShares} shares</strong> | Shorted: <strong>${shortData.shares} shares</strong>
+    `;
+
+    document.getElementById('trade-calculation-details').innerHTML = `
+      Order Cost / Value: <strong>$${totalVal.toFixed(2)}</strong>
+    `;
+
+    const btn = document.getElementById('btn-execute-trade');
+    if (action === 'BUY' || action === 'COVER') {
+      btn.className = "btn-primary";
+      btn.textContent = action === 'BUY' ? `Buy ${shares} Shares` : `Cover ${shares} Shorted Shares`;
+    } else {
+      btn.className = "btn-primary sell";
+      btn.textContent = action === 'SELL' ? `Sell ${shares} Shares` : `Short Sell ${shares} Shares`;
+    }
+  }
+
+  executeTrade() {
+    const sym = this.selectedTradeSymbol;
+    const stock = this.state.stocks[sym];
+    if (stock.frozen) {
+      alert("This stock is frozen!");
+      return;
+    }
+
+    const action = document.getElementById('trade-action').value;
+    const shares = parseInt(document.getElementById('trade-shares').value);
+    const player = this.state.players[this.state.activePlayer];
+
+    if (!shares || shares <= 0) {
+      alert("Please enter a valid share quantity greater than 0.");
+      return;
+    }
+
+    const tradeCost = Math.round(shares * stock.price * 100) / 100;
+
+    if (action === 'BUY') {
+      if (player.cash < tradeCost) {
+        alert(`Insufficient cash! You need $${tradeCost.toFixed(2)} but have $${player.cash.toFixed(2)}.`);
+        return;
+      }
+      player.cash -= tradeCost;
+      player.holdings[sym] = (player.holdings[sym] || 0) + shares;
+      player.history.unshift(`Bought ${shares} shares of ${sym} at $${stock.price.toFixed(2)} (-$${tradeCost.toFixed(2)})`);
+
+    } else if (action === 'SELL') {
+      const currentShares = player.holdings[sym] || 0;
+      if (currentShares < shares) {
+        alert(`You only own ${currentShares} shares of ${sym}.`);
+        return;
+      }
+      player.holdings[sym] -= shares;
+      player.cash += tradeCost;
+
+      // Approximate cost basis for award tracking
+      const realizedGain = tradeCost - (shares * 100.00); // 100 is base nominal cost
+      this.state.completedTrades.push({
+        player: this.state.activePlayer,
+        type: 'LONG',
+        symbol: sym,
+        profit: realizedGain,
+        note: `Sold ${shares} ${sym}`
+      });
+
+      player.history.unshift(`Sold ${shares} shares of ${sym} at $${stock.price.toFixed(2)} (+$${tradeCost.toFixed(2)})`);
+
+    } else if (action === 'SHORT') {
+      const currentShortExposure = this.calculateShortLiability(this.state.activePlayer);
+      const playerEquity = this.calculatePlayerEquity(this.state.activePlayer);
+      const newLiability = tradeCost;
+
+      // Collateral & Exposure Cap: Aggregated short exposure capped at 50% of equity
+      if ((currentShortExposure + newLiability) > (playerEquity * 0.50)) {
+        alert(`Risk Cap Exceeded: Maximum short exposure cannot exceed 50% of your total equity ($${(playerEquity * 0.50).toFixed(2)}).`);
+        return;
+      }
+
+      if (player.cash < tradeCost * 0.50) {
+        alert(`Collateral Requirement: You must maintain at least 50% cash collateral to open this short.`);
+        return;
+      }
+
+      // Add cash from short sale, record liability basis
+      player.cash += tradeCost;
+      if (!player.shorts[sym]) {
+        player.shorts[sym] = { shares: 0, costBasis: 0 };
+      }
+      player.shorts[sym].shares += shares;
+      player.shorts[sym].costBasis = stock.price;
+
+      player.history.unshift(`Opened Short: ${shares} shares of ${sym} at $${stock.price.toFixed(2)} (+$${tradeCost.toFixed(2)} cash balance)`);
+
+    } else if (action === 'COVER') {
+      const shortPos = player.shorts[sym];
+      if (!shortPos || shortPos.shares < shares) {
+        alert(`You only have ${shortPos ? shortPos.shares : 0} short shares of ${sym}.`);
+        return;
+      }
+      this.coverShortPosition(this.state.activePlayer, sym, shares, false);
+    }
+
+    this.closeModal('trade-modal');
+    this.saveState();
+    this.render();
+  }
+
+  coverShortPosition(playerKey, sym, sharesToCover, isLiquidation = false) {
+    const player = this.state.players[playerKey];
+    const stock = this.state.stocks[sym];
+    const shortPos = player.shorts[sym];
+    const costToCover = Math.round(sharesToCover * stock.price * 100) / 100;
+
+    // Deduct cash to repurchase the borrowed shares
+    player.cash -= costToCover;
+    const profit = (shortPos.costBasis - stock.price) * sharesToCover;
+
+    shortPos.shares -= sharesToCover;
+
+    this.state.completedTrades.push({
+      player: playerKey,
+      type: 'SHORT',
+      symbol: sym,
+      profit: profit,
+      note: `Covered ${sharesToCover} short ${sym}`
+    });
+
+    const prefix = isLiquidation ? "🚨 MARGIN CALL LIQUIDATION: " : "";
+    player.history.unshift(`${prefix}Covered ${sharesToCover} short shares of ${sym} at $${stock.price.toFixed(2)} (Net P/L: ${profit >= 0 ? '+' : ''}$${profit.toFixed(2)})`);
+
+    if (isLiquidation) {
+      this.state.news.unshift({
+        text: `LIQUIDATION: ${playerKey}'s short position in ${sym} was automatically closed due to margin requirements.`,
+        time: `Day ${this.state.day}`
+      });
+    }
+  }
+
+  // --- End of Game & Awards Ceremony ---
+
+  closeExchange() {
+    if (!confirm("Are you ready to close Beach Street Exchange? This will liquidate all active positions and determine the champion.")) return;
+
+    // Liquidate all long and short positions for all players
+    Object.keys(this.state.players).forEach(pKey => {
+      const p = this.state.players[pKey];
+
+      // Longs
+      for (const [sym, shares] of Object.entries(p.holdings)) {
+        if (shares > 0) {
+          const val = shares * this.state.stocks[sym].price;
+          p.cash += val;
+          const profit = (this.state.stocks[sym].price - 100) * shares;
+          this.state.completedTrades.push({ player: pKey, type: 'LONG', symbol: sym, profit: profit });
+          p.holdings[sym] = 0;
+        }
+      }
+
+      // Shorts
+      for (const [sym, sData] of Object.entries(p.shorts)) {
+        if (sData.shares > 0) {
+          const coverCost = sData.shares * this.state.stocks[sym].price;
+          p.cash -= coverCost;
+          const profit = (sData.costBasis - this.state.stocks[sym].price) * sData.shares;
+          this.state.completedTrades.push({ player: pKey, type: 'SHORT', symbol: sym, profit: profit });
+          sData.shares = 0;
+        }
+      }
+    });
+
+    // Compute Awards
+    // 1. Wealthiest
+    const rankings = Object.keys(this.state.players)
+      .map(k => ({ name: k, cash: this.state.players[k].cash }))
+      .sort((a, b) => b.cash - a.cash);
+
+    const winner = rankings[0];
+
+    // 2. Biggest realized trading profit
+    const sortedTrades = [...this.state.completedTrades].sort((a, b) => b.profit - a.profit);
+    const bestTrade = sortedTrades.length > 0 && sortedTrades[0].profit > 0 ? sortedTrades[0] : null;
+
+    // 3. Biggest short-selling profit
+    const shortTrades = this.state.completedTrades.filter(t => t.type === 'SHORT').sort((a, b) => b.profit - a.profit);
+    const bestShort = shortTrades.length > 0 && shortTrades[0].profit > 0 ? shortTrades[0] : null;
+
+    // 4. Worst completed trade
+    const worstTrade = sortedTrades.length > 0 ? sortedTrades[sortedTrades.length - 1] : null;
+
+    // 5. Most volatile stock (max price - min price in history)
+    let mostVolatileSym = 'NIC';
+    let maxSpread = 0;
+    Object.values(this.state.stocks).forEach(st => {
+      const spread = Math.max(...st.history) - Math.min(...st.history);
+      if (spread > maxSpread) {
+        maxSpread = spread;
+        mostVolatileSym = st.symbol;
+      }
+    });
+
+    // Render Awards Modal
+    const awardsHtml = `
+      <div class="award-pill" style="border-color: var(--green);">
+        <div class="award-title">🏆 Champion of Beach Street</div>
+        <div class="award-winner">${winner.name} — $${winner.cash.toFixed(2)}</div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Final liquidated liquid equity</div>
+      </div>
+
+      <div class="award-pill">
+        <div class="award-title">📈 Biggest Realized Trading Profit</div>
+        <div class="award-winner" style="color:var(--text-main);">
+          ${bestTrade ? `${bestTrade.player} (+$${bestTrade.profit.toFixed(2)} on${bestTrade.symbol})` : 'None Recorded'}
+        </div>
+      </div>
+
+      <div class="award-pill">
+        <div class="award-title">📉 Master Short Seller</div>
+        <div class="award-winner" style="color:var(--text-main);">
+          ${bestShort ? `${bestShort.player} (+$${bestShort.profit.toFixed(2)} on${bestShort.symbol})` : 'No Profitable Shorts'}
+        </div>
+      </div>
+
+      <div class="award-pill">
+        <div class="award-title">🗑️ Wall Street "Bag Holder" (Worst Trade)</div>
+        <div class="award-winner" style="color:var(--red);">
+          ${worstTrade && worstTrade.profit < 0 ? `${worstTrade.player} (-$${Math.abs(worstTrade.profit).toFixed(2)} on${worstTrade.symbol})` : 'None with losses'}
+        </div>
+      </div>
+
+      <div class="award-pill">
+        <div class="award-title">⚡ Most Volatile Vacation Stock</div>
+        <div class="award-winner" style="color:#ffb100;">
+          ${mostVolatileSym} ($${maxSpread.toFixed(2)} high-to-low swing)
+        </div>
+      </div>
+    `;
+
+    document.getElementById('awards-content').innerHTML = awardsHtml;
+    document.getElementById('endgame-modal').style.display = 'flex';
+    this.saveState();
+    this.render();
+  }
+
+  // --- UI Helpers & Rendering ---
+
+  switchPlayer(playerKey) {
+    this.state.activePlayer = playerKey;
+    this.saveState();
+    this.render();
+  }
+
+  closeModal(id) {
+    document.getElementById(id).style.display = 'none';
+  }
+
+  renderChart(history, isPositive) {
+    if (!history || history.length < 2) {
+      return `<svg viewBox="0 0 100 30"><line x1="0" y1="15" x2="100" y2="15" stroke="${isPositive ? '#00c805' : '#ff5000'}" stroke-width="2"/></svg>`;
+    }
+
+    const min = Math.min(...history) * 0.98;
+    const max = Math.max(...history) * 1.02;
+    const range = (max - min) || 1;
+    const width = 100;
+    const height = 40;
+
+    const points = history.map((val, idx) => {
+      const x = (idx / (history.length - 1)) * width;
+      const y = height - ((val - min) / range) * height;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+
+    const strokeColor = isPositive ? 'var(--green)' : 'var(--red)';
+    return `
+      <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">
+        <polyline fill="none" stroke="${strokeColor}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="${points}" />
+      </svg>
+    `;
+  }
+
+  render() {
+    // Current Day badge & Close Exchange visibility
+    document.getElementById('current-day-label').textContent = `DAY ${this.state.day} OF 4`;
+    document.getElementById('challenges-day-num').textContent = this.state.day;
+    document.getElementById('player-selector').value = this.state.activePlayer;
+
+    const closeBtn = document.getElementById('btn-close-exchange');
+    closeBtn.style.display = this.state.day === 4 ? 'block' : 'none';
+
+    // Current Player Summary
+    const activePlayer = this.state.players[this.state.activePlayer];
+    const equity = this.calculatePlayerEquity(this.state.activePlayer);
+    const shortLiability = this.calculateShortLiability(this.state.activePlayer);
+
+    document.getElementById('player-equity').textContent = `$${equity.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    document.getElementById('player-cash-sub').textContent = `Cash: $${activePlayer.cash.toFixed(2)} • Short Debt: $${shortLiability.toFixed(2)}`;
+
+    // Goal Progress ($3,000)
+    const goalPct = Math.min(100, Math.max(0, Math.round((equity / 3000) * 100)));
+    document.getElementById('goal-progress-percent').textContent = `${goalPct}% ($3,000 Target)`;
+    document.getElementById('goal-progress-fill').style.width = `${goalPct}%`;
+
+    // Stock List
+    const stocksContainer = document.getElementById('stocks-container');
+    stocksContainer.innerHTML = Object.values(this.state.stocks).map(st => {
+      const base = st.history[0] || 100;
+      const diff = st.price - base;
+      const pct = (diff / base) * 100;
+      const isPos = diff >= 0;
+      const sign = isPos ? '+' : '';
+
+      return `
+        <div class="stock-card">
+          <div class="stock-head">
+            <div>
+              <div class="stock-symbol">
+                ${st.symbol}
+                ${st.frozen ? `<span class="badge-frozen">HALTED</span>` : ''}
+              </div>
+              <div class="stock-name">${st.name}</div>
+            </div>
+            <div>
+              <div class="stock-price">$${st.price.toFixed(2)}</div>
+              <div class="stock-change ${isPos ? 'text-green' : 'text-red'}">
+                ${sign}${pct.toFixed(1)}% ($${sign}${diff.toFixed(2)})
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-container">
+            ${this.renderChart(st.history, isPos)}
+          </div>
+
+          <div class="stock-trade-actions">
+            <button class="btn-trade green" ${st.frozen ? 'disabled' : ''} onclick="BSX.openTradeModal('${st.symbol}', 'BUY')">BUY</button>
+            <button class="btn-trade" ${st.frozen ? 'disabled' : ''} onclick="BSX.openTradeModal('${st.symbol}', 'SELL')">SELL</button>
+            <button class="btn-trade red" ${st.frozen ? 'disabled' : ''} onclick="BSX.openTradeModal('${st.symbol}', 'SHORT')">SHORT</button>
+            <button class="btn-trade" ${st.frozen ? 'disabled' : ''} onclick="BSX.openTradeModal('${st.symbol}', 'COVER')">COVER</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Positions Container
+    const positionsContainer = document.getElementById('positions-container');
+    const positionRows = [];
+
+    // Longs
+    for (const [sym, shares] of Object.entries(activePlayer.holdings)) {
+      if (shares > 0) {
+        const val = shares * this.state.stocks[sym].price;
+        positionRows.push(`
+          <div class="table-item">
+            <div>
+              <strong>${sym}</strong> <span class="badge-status badge-resolved">LONG</span><br>
+              <small style="color:var(--text-muted);">${shares} shares @ $${this.state.stocks[sym].price.toFixed(2)}</small>
+            </div>
+            <div style="text-align:right;">
+              <strong>$${val.toFixed(2)}</strong>
+            </div>
+          </div>
+        `);
+      }
+    }
+
+    // Shorts
+    for (const [sym, sData] of Object.entries(activePlayer.shorts)) {
+      if (sData.shares > 0) {
+        const currentVal = sData.shares * this.state.stocks[sym].price;
+        const pnl = (sData.costBasis - this.state.stocks[sym].price) * sData.shares;
+        positionRows.push(`
+          <div class="table-item">
+            <div>
+              <strong>${sym}</strong> <span class="badge-status badge-failed">SHORT</span><br>
+              <small style="color:var(--text-muted);">${sData.shares} shorted (Entry: $${sData.costBasis.toFixed(2)})</small>
+            </div>
+            <div style="text-align:right;">
+              <div>Liab: $${currentVal.toFixed(2)}</div>
+              <small class="${pnl >= 0 ? 'text-green' : 'text-red'}">P/L: ${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}</small>
+            </div>
+          </div>
+        `);
+      }
+    }
+
+    positionsContainer.innerHTML = positionRows.length > 0
+      ? positionRows.join('')
+      : `<div class="table-item" style="color: var(--text-muted);">No open long or short positions.</div>`;
+
+    // Challenges
+    const chalContainer = document.getElementById('challenges-container');
+    chalContainer.innerHTML = this.state.challenges.map(c => `
+      <div class="table-item">
+        <div style="max-width: 65%;">
+          <strong>${c.symbol}</strong> (${c.playerName})<br>
+          <span style="font-size:0.75rem; color:var(--text-muted);">${c.description}</span>
+        </div>
+        <div>
+          ${c.status === 'PENDING' ? `
+            <button style="padding:4px 8px; font-size:0.7rem; background:var(--green); color:#000; margin-right:4px;" onclick="BSX.resolveChallenge('${c.id}', true)">Pass (+20%)</button>
+            <button style="padding:4px 8px; font-size:0.7rem; background:var(--red); color:#fff;" onclick="BSX.resolveChallenge('${c.id}', false)">Fail (-15%)</button>
+          ` : `
+            <span class="badge-status ${c.status === 'SUCCESS' ? 'badge-resolved' : 'badge-failed'}">${c.status}</span>
+          `}
+        </div>
+      </div>
+    `).join('');
+
+    // Incidents
+    const incContainer = document.getElementById('incidents-container');
+    const pendingIncidents = this.state.incidents;
+    incContainer.innerHTML = pendingIncidents.length > 0 ? pendingIncidents.slice(0, 5).map(inc => `
+      <div class="table-item">
+        <div style="max-width: 65%;">
+          <strong>${inc.symbol}</strong> (${(inc.delta * 100).toFixed(0)}%)<br>
+          <span style="font-size:0.75rem; color:var(--text-muted);">${inc.description}</span>
+        </div>
+        <div>
+          ${inc.status === 'PENDING' ? `
+            <button style="padding:4px 8px; font-size:0.7rem; background:var(--green); color:#000; margin-right:4px;" onclick="BSX.resolveIncident('${inc.id}', true)">Approve</button>
+            <button style="padding:4px 8px; font-size:0.7rem; background:#334155; color:#fff;" onclick="BSX.resolveIncident('${inc.id}', false)">Reject</button>
+          ` : `
+            <span class="badge-status ${inc.status === 'APPROVED' ? 'badge-resolved' : 'badge-failed'}">${inc.status}</span>
+          `}
+        </div>
+      </div>
+    `).join('') : `<div class="table-item" style="color:var(--text-muted);">No incident reports pending.</div>`;
+
+    // Leaderboard
+    const lbContainer = document.getElementById('leaderboard-container');
+    const standings = Object.keys(this.state.players).map(k => ({
+      name: k,
+      equity: this.calculatePlayerEquity(k)
+    })).sort((a, b) => b.equity - a.equity);
+
+    lbContainer.innerHTML = standings.map((item, idx) => `
+      <div class="table-item">
+        <div>
+          <span style="color:var(--text-muted); margin-right:8px; font-weight:700;">#${idx + 1}</span>
+          <strong>${item.name}</strong> ${item.name === this.state.activePlayer ? '<small style="color:var(--accent);">(You)</small>' : ''}
+        </div>
+        <div style="font-weight:700;">
+          $${item.equity.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        </div>
+      </div>
+    `).join('');
+
+    // News Feed
+    const newsContainer = document.getElementById('news-container');
+    newsContainer.innerHTML = this.state.news.slice(0, 8).map(n => `
+      <div class="news-item">
+        <div>${n.text}</div>
+        <div class="news-time">${n.time}</div>
+      </div>
+    `).join('');
+  }
+}
+
+// Global Instantiation
+const BSX = new BeachStreetExchange();
+window.BSX = BSX;
+document.addEventListener('DOMContentLoaded', () => BSX.render());
+</script>
+</body>
+</html>
